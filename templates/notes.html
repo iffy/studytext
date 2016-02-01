@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{ title }}</title>
+  <style>
+  body {
+    padding: 0;
+    margin: 0;
+    font-family: ;
+  }
+  .app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+  }
+  .app header,
+  .app footer {
+    background-color: #08c;
+    color: white;
+    padding: 0.5rem 1rem;
+  }
+  .app content {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+  }
+  .app content .sidenav {
+    flex-basis: 10rem;
+    background-color: #eee;
+    padding: 0.5rem 1rem;
+  }
+  .app content .workbook {
+    padding: 0.5rem 1rem;
+  }
+
+  .dirlist {
+    margin-top: 1rem;
+  }
+  .dirlist a {
+    display: block;
+  }
+  </style>
+</head>
+<body class="app">
+  <header>Header</header>
+  <content>
+    <div class="sidenav">
+      <a href="{{ url_for('notes') }}">Home</a>
+      <a href="{{ url_for('notes', path=info.parent) }}">Up</a>
+      
+
+      <div class="dirlist">
+      {% for document in documents %}
+        <a href="{{ url_for('notes', path=document.path) }}" class="document {{ 'dir' if document.dir }}">{{ document.name or document.path }}</a>
+      {% endfor %}
+      </div>
+    </div>
+
+    <div class="workbook">
+      work area
+      <div class="text">
+      </div>
+      <div class="notes">
+      </div>
+    </div>
+  </content>
+  <footer>Footer</footer>
+</body>
+</html>
