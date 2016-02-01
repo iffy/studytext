@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{ info.name or title }}</title>
+  <style>
+  body {
+    padding: 0;
+    margin: 0;
+    font-family: ;
+  }
+  .app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+  }
+  .app header,
+  .app footer {
+    background-color: rgba(52, 152, 219,1.0);
+    color: white;
+    padding: 0.5rem 1rem;
+  }
+  .app content {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+  }
+  .app content .sidenav {
+    flex-basis: 10rem;
+    background-color: #eee;
+    padding: 0.5rem 1rem;
+  }
+  .app content .workarea {
+    padding: 0.5rem 1rem;
+    overflow-y: auto;
+  }
+
+  .dirlist {
+    margin-top: 1rem;
+  }
+  .dirlist a {
+    display: block;
+  }
+
+  .workarea .paragraph {
+    display: flex;
+    margin-top: 1rem;
+  }
+  .workarea .paragraph .source {
+    flex-basis: 3in;
+  }
+  .workarea .paragraph .notes {
+    flex-basis: 3in;
+    margin-left: 0.5rem;
+    border: 1px solid #ccc;
+    border-width: 0 0 0 2px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .notes .note {
+    flex: 1;
+    color: rgba(52, 152, 219,1.0);
+    font-family: Times;
+    font-size: 1rem;
+    padding: 0.5rem;
+    border: 0;
+  }
+  .notes button {
+  }
+  .notes .note:focus {
+    outline: none;
+    background-color: rgba(52, 152, 219, 0.1);
+  }
+  input.wrap {
+    word-wrap: break-word;
+    word-break: break-word;
+  }
+  input.fullsize {
+    height: 100%;
+    width: 100%;
+  }
+  </style>
+  <script src="{{ url_for('static', filename='jquery-2.2.0.min.js') }}"></script>
+</head>
+<body class="app">
+  <header> </header>
+  <content>
+    <div class="sidenav">
+      <a href="{{ url_for('text') }}">Home</a>
+      <a href="{{ url_for('text', path=info.parent) }}">Up</a>
+      
+
+      <div class="dirlist">
+      {% for document in documents %}
+        <a href="{{ url_for('text', path=document.path) }}" class="document {{ 'dir' if document.dir }}">{{ document.name or document.path }}</a>
+      {% endfor %}
+      </div>
+    </div>
+
+    <div class="workarea">
+      {% if content %}
+      {% for paragraph in content.split('\n\n') %}
+      <form method="post" action="{{ url_for('notes') }}">
+        <input type="hidden" name="path" value="{{ info.path|e }}">
+        <input type="hidden" name="start" value="{{ loop.index }}">
+        <input type="hidden" name="end" value="{{ loop.index }}">
+        <div class="paragraph">
+          <div class="source">{{ paragraph }}</div>
+          <div class="notes">
+            {% set parent = loop %}
+            {% for note in notes %}
+            {% if note.start == (parent.index|string) %}
+            <div class="note">{{ note.text }}</div>
+            {% endif %}
+            {% endfor %}
+            <textarea class="note" name="text"></textarea>
+            <button type="submit">Save</button>        
+          </div>
+        </div>
+      </form>
+      {% endfor %}
+      {% endif %}
+    </div>
+  </content>
+  <footer> </footer>
+</body>
+</html>
