@@ -1,6 +1,8 @@
 from flask import Flask
 from flask import render_template, g, redirect, url_for
-from flask import request
+from flask import request, Response, abort
+
+from functools import wraps
 
 import os
 
@@ -54,6 +56,33 @@ def notes():
             app.config.db.addNote(path, start, end, text)
     return redirect(url_for('text', path=path), code=302)
 
+
+#---------------------------------------------------------------------------
+# json api
+#---------------------------------------------------------------------------
+
+def jsonhandler(f):
+    @wraps(f)
+    def func(*args, **kwargs):
+        body = f(*args, **kwargs)
+        serialized = json.dumps(body)
+        response = Response(serialized)
+        response.headers.update({
+            'Content-Type': 'application/json',
+        })
+        return response
+    return func
+
+@app.route('/api/rpc', methods=['POST'])
+@jsonhandler
+def api_path():
+    data = json.loads(request.data)
+    method = data['method']
+    kwargs = data['kwargs']
+    m = getattr(app.config.db, method, None)
+    if not m:
+        abort(404)
+    return m(**kwargs)
 
 if __name__ == '__main__':
     import sys
