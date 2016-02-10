@@ -51,7 +51,10 @@ class NoteDatabase(object):
         else:
             # file
             if p.endswith('.md'):
-                metadata = yaml.safe_load_all(open(p, 'rb')).next()
+                try:
+                    metadata = yaml.safe_load_all(open(p, 'rb')).next()
+                except StopIteration:
+                    metadata = {}
                 if metadata and isinstance(metadata, dict):
                     info.update(metadata)
         return info

@@ -4,6 +4,7 @@ from flask import request, Response, abort
 
 from functools import wraps
 
+import json
 import os
 
 from db import NoteDatabase
@@ -67,9 +68,7 @@ def jsonhandler(f):
         body = f(*args, **kwargs)
         serialized = json.dumps(body)
         response = Response(serialized)
-        response.headers.update({
-            'Content-Type': 'application/json',
-        })
+        response.headers['Content-Type'] = 'application/json'
         return response
     return func
 

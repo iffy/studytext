@@ -30,10 +30,6 @@
     background-color: #eee;
     padding: 0.5rem 1rem;
   }
-  .app content .workarea {
-    padding: 0.5rem 1rem;
-    overflow-y: auto;
-  }
 
   .dirlist {
     margin-top: 1rem;
@@ -42,35 +38,23 @@
     display: block;
   }
 
-  .workarea .paragraph {
+  .workarea {
+    flex-grow: 1;
     display: flex;
-    margin-top: 1rem;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
   }
-  .workarea .paragraph .source {
+  .workarea #original-text {
     flex-basis: 3in;
-  }
-  .workarea .paragraph .notes {
-    flex-basis: 3in;
-    margin-left: 0.5rem;
-    border: 1px solid #ccc;
-    border-width: 0 0 0 2px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-  .notes .note {
-    flex: 1;
-    color: rgba(52, 152, 219,1.0);
-    font-family: Times;
-    font-size: 1rem;
     padding: 0.5rem;
-    border: 0;
+    position: relative;
   }
-  .notes button {
-  }
-  .notes .note:focus {
-    outline: none;
-    background-color: rgba(52, 152, 219, 0.1);
+  .workarea #note-margin {
+    background-color: #ffffe0;
+    flex-basis: 3in;
+    padding: 0.5rem;
+    position: relative;
   }
   input.wrap {
     word-wrap: break-word;
@@ -80,18 +64,25 @@
     height: 100%;
     width: 100%;
   }
+  .selected {
+    background-color: #08c;
+    color: #fff;
+  }
+  .entry {
+    position: absolute;
+    border: 1px solid #999;
+    width: 100%;
+  }
   </style>
   <script src="{{ url_for('static', filename='jquery-2.2.0.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='angular.min.js') }}"></script>
   <script src="{{ url_for('static', filename='textapp.js') }}"></script>
 </head>
-<body class="app" ng-app="textapp" ng-controller="TextAppCtrl as ctrl">
+<body class="app">
   <header> </header>
   <content>
     <div class="sidenav">
       <a href="{{ url_for('text') }}">Home</a>
       <a href="{{ url_for('text', path=info.parent) }}">Up</a>
-      
 
       <div class="dirlist">
       {% for document in documents %}
@@ -101,30 +92,35 @@
     </div>
 
     <div class="workarea">
-      {% if content %}
-      {% for paragraph in content.split('\n\n') %}
-      <form method="post" action="{{ url_for('notes') }}">
-        <input type="hidden" name="path" value="{{ info.path|e }}">
-        <input type="hidden" name="start" value="{{ loop.index }}">
-        <input type="hidden" name="end" value="{{ loop.index }}">
-        <div class="paragraph">
-          <div class="source">{{ paragraph }}</div>
-          <div class="notes">
-            {% set parent = loop %}
-            {% for note in notes %}
-            {% if note.start == (parent.index|string) %}
-            <div class="note">{{ note.text }}</div>
-            {% endif %}
-            {% endfor %}
-            <textarea class="note" name="text"></textarea>
-            <button type="submit">Save</button>        
-          </div>
-        </div>
-      </form>
-      {% endfor %}
-      {% endif %}
+      <div id="original-text"></div>
+      <div id="note-margin"></div>
     </div>
   </content>
   <footer> </footer>
+  <script>
+  $(function() {
+    var path = "{{ path|e }}";
+    rpc('getContent', {'path': path})
+    .then(function(content) {
+      console.log('got content');
+      placeAsWords(content, '#original-text');
+    });
+    $('#note-margin').click(function(ev) {
+      if (ev.target !== $('#note-margin')[0]) {
+        return;
+      }
+      console.log(ev);
+      var x = ev.offsetX;
+      var y = ev.offsetY;
+      var entry = $('<input type="text">');
+      entry.addClass('entry').addClass('wrap');
+      entry.css({
+        top: y,
+      });
+      $('#note-margin').append(entry);
+      entry.focus();
+    })
+  });
+  </script>
 </body>
 </html>
